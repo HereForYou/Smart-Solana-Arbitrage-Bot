@@ -1,0 +1,36 @@
+{
+  "name": "sol-win-bot-from-edge",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "ts-node ./src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/lodash": "^4.17.14",
+    "@types/node": "^22.10.5",
+    "@types/node-fetch": "^2.6.12",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@metaplex-foundation/js": "^0.20.1",
+    "@project-serum/anchor": "^0.26.0",
+    "@raydium-io/raydium-sdk-v2": "^0.1.102-alpha",
+    "@solana/spl-token": "^0.4.9",
+    "@solana/web3.js": "^1.98.0",
+    "axios": "^1.7.9",
+    "base58": "^2.0.1",
+    "bs58": "^6.0.0",
+    "cross-fetch": "^4.1.0",
+    "dotenv": "^16.4.7",
+    "jito-ts": "^4.2.0",
+    "lodash": "^4.17.21",
+    "mongoose": "^8.9.4",
+    "telegraf": "^4.16.3"
+  }
+}
