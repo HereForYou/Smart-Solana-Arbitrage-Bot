@@ -127,7 +127,6 @@ bot.command('arbitrage', async (ctx) => {
 
         // let pendingMsg = await ctx.reply('The purchase transaction is pending...');
 
-        // Swap logic
         // Purchase the tokens
         // const buyResult = await swapTokens(
         //   SOL_ADDRESS,
