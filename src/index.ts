@@ -41,7 +41,7 @@ bot.command('arbitrage', async (ctx) => {
       await ctx.reply('Please import your wallet and then try again.\n/setting');
       return;
     }
-    if (user.snipeAmount < 0.01 || user.priorityFee < 5000 || user.slippageBps === 0) {
+    if (user.snipeAmount < 0.01 || user.priorityFee < 0.000005 || user.slippageBps === 0) {
       await ctx.reply(
         `Please set up the bot correctly.\n` +
           `Amount must be greater than 0.01.\n` +
@@ -55,11 +55,11 @@ bot.command('arbitrage', async (ctx) => {
       await ctx.reply('Trade amount is too small to make a profit.\nSet the amount at least 0.02 SOL.');
       return;
     }
-    const solAmount = await getBalanceOfWallet(user.wallet.publicKey);
-    if (solAmount < user.snipeAmount * SOL_DECIMAL + user.priorityFee * 2 + 0.02 * SOL_DECIMAL) {
-      await ctx.reply('Insufficient balance. Please top up your wallet.');
-      return;
-    }
+    // const solAmount = await getBalanceOfWallet(user.wallet.publicKey);
+    // if (solAmount < user.snipeAmount * SOL_DECIMAL + user.priorityFee * 2 + 0.02 * SOL_DECIMAL) {
+    //   await ctx.reply('Insufficient balance. Please top up your wallet.');
+    //   return;
+    // }
     loop = true;
     // let prevTime = Date.now();
     // Looping all tokens
@@ -79,16 +79,6 @@ bot.command('arbitrage', async (ctx) => {
         // Get token metadata
         const tokenInfo = await getTokenInfo(token.address);
 
-        await ctx.reply(
-          `Token: ${tokenInfo?.name}/${tokenInfo?.symbol}\n` +
-            `____________________\n` +
-            `BuyPrice: $${pools.min.priceUsd}\n` +
-            `Dex: ${pools.min.dexId}\n` +
-            `____________________\n` +
-            `Sell Price: $${pools.max.priceUsd}\n` +
-            `Dex: ${pools.max.dexId}`
-        );
-
         if (pools.numOfPools <= 1 || pools.min.priceUsd === pools.max.priceUsd) {
           console.log(`There is no or one pool or the diff of prices is too low with this token ${token.address}`);
           await ctx.reply('There is no or one pool that the total liquidity is greater than 10K for this token');
@@ -99,6 +89,16 @@ bot.command('arbitrage', async (ctx) => {
           await ctx.reply(`The difference between max and min price is too low to get profit.`);
           continue;
         }
+
+        await ctx.reply(
+          `Token: ${tokenInfo?.name}/${tokenInfo?.symbol}\n` +
+            `____________________\n` +
+            `BuyPrice: $${pools.min.priceUsd}\n` +
+            `Dex: ${pools.min.dexId}\n` +
+            `____________________\n` +
+            `Sell Price: $${pools.max.priceUsd}\n` +
+            `Dex: ${pools.max.dexId}`
+        );
 
         const isEnableToBuy = await isTradable(
           SOL_ADDRESS,
@@ -125,69 +125,68 @@ bot.command('arbitrage', async (ctx) => {
           continue;
         }
 
-        let pendingMsg = await ctx.reply('The purchase transaction is pending...');
+        // let pendingMsg = await ctx.reply('The purchase transaction is pending...');
 
-        // Swap logic
         // Purchase the tokens
-        const buyResult = await swapTokens(
-          SOL_ADDRESS,
-          token.address,
-          user.snipeAmount * SOL_DECIMAL,
-          user.wallet.privateKey.toString(),
-          user.priorityFee,
-          user.jitoFee,
-          user.slippageBps,
-          pools.min.dexName
-        );
-        console.log('buy result:', buyResult);
+        // const buyResult = await swapTokens(
+        //   SOL_ADDRESS,
+        //   token.address,
+        //   user.snipeAmount * SOL_DECIMAL,
+        //   user.wallet.privateKey.toString(),
+        //   user.priorityFee,
+        //   user.jitoFee,
+        //   user.slippageBps,
+        //   pools.min.dexName
+        // );
+        // console.log('buy result:', buyResult);
 
-        // If the purchase is successful
-        if (buyResult.success) {
-          const tokenBalance = await getTokenBalanceOfWallet(user.wallet.publicKey.toString(), token.address);
-          await ctx.deleteMessage(pendingMsg.message_id);
-          await ctx.reply(
-            `Buy Success\nUsed ${buyResult.solDiff / SOL_DECIMAL} SOL\nGot ${
-              (buyResult.outAmount || 0) / (tokenInfo?.decimals || 1e9)
-            } ${tokenInfo?.symbol}`
-          );
-          pendingMsg = await ctx.reply('Sale transaction is pending...');
-          let times = 0;
+        // // If the purchase is successful
+        // if (buyResult.success) {
+        //   const tokenBalance = await getTokenBalanceOfWallet(user.wallet.publicKey.toString(), token.address);
+        //   await ctx.deleteMessage(pendingMsg.message_id);
+        //   await ctx.reply(
+        //     `Buy Success\nUsed ${buyResult.solDiff / SOL_DECIMAL} SOL\nGot ${
+        //       (buyResult.outAmount || 0) / (tokenInfo?.decimals || 1e9)
+        //     } ${tokenInfo?.symbol}`
+        //   );
+        //   pendingMsg = await ctx.reply('Sale transaction is pending...');
+        //   let times = 0;
 
-          // Looping until the sale is successful
-          while (true) {
-            const sellResult = await swapTokens(
-              token.address,
-              SOL_ADDRESS,
-              tokenBalance || buyResult.outAmount || 0,
-              user.wallet.privateKey.toString(),
-              user.priorityFee,
-              user.jitoFee,
-              user.slippageBps,
-              pools.max.dexName
-            );
-            console.log('sell result:', sellResult);
+        //   // Looping until the sale is successful
+        //   while (true) {
+        //     const sellResult = await swapTokens(
+        //       token.address,
+        //       SOL_ADDRESS,
+        //       tokenBalance || buyResult.outAmount || 0,
+        //       user.wallet.privateKey.toString(),
+        //       user.priorityFee,
+        //       user.jitoFee,
+        //       user.slippageBps,
+        //       pools.max.dexName
+        //     );
+        //     console.log('sell result:', sellResult);
 
-            // If the sale is successful
-            if (sellResult.success) {
-              // const pl = (Math.abs(sellResult.solDiff) - Math.abs(buyResult.solDiff)) / SOL_DECIMAL;
-              await ctx.deleteMessage(pendingMsg.message_id);
-              // await ctx.reply(`Sell success!\nGot ${sellResult.solDiff / SOL_DECIMAL} SOL\n P/L: ${pl}`);
-              await ctx.reply(`Sell success!`);
-              break; // Exit the loop after successful sale
-            } else if (times < 5) {
-              times += 1;
-            } else {
-              await ctx.reply('Your sale transaction has failed. Please increase the priority fee.');
-              break; // Exit the loop after 5 attempts
-            }
-          }
-        } else {
-          await ctx.deleteMessage(pendingMsg.message_id);
-          await ctx.reply(
-            buyResult.message || 'Your purchase transaction has failed. Please increase the priority fee.'
-          );
-          break;
-        }
+        //     // If the sale is successful
+        //     if (sellResult.success) {
+        //       // const pl = (Math.abs(sellResult.solDiff) - Math.abs(buyResult.solDiff)) / SOL_DECIMAL;
+        //       await ctx.deleteMessage(pendingMsg.message_id);
+        //       // await ctx.reply(`Sell success!\nGot ${sellResult.solDiff / SOL_DECIMAL} SOL\n P/L: ${pl}`);
+        //       await ctx.reply(`Sell success!`);
+        //       break; // Exit the loop after successful sale
+        //     } else if (times < 5) {
+        //       times += 1;
+        //     } else {
+        //       await ctx.reply('Your sale transaction has failed. Please increase the priority fee.');
+        //       break; // Exit the loop after 5 attempts
+        //     }
+        //   }
+        // } else {
+        //   await ctx.deleteMessage(pendingMsg.message_id);
+        //   await ctx.reply(
+        //     buyResult.message || 'Your purchase transaction has failed. Please increase the priority fee.'
+        //   );
+        //   break;
+        // }
       }
     }
   } catch (error) {
