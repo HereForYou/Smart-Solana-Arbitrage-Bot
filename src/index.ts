@@ -337,6 +337,10 @@ bot.action('Setting', (ctx, next) => checkAction(ctx, next, 'Setting'), settingA
  */
 bot.action('Wallet', (ctx, next) => checkAction(ctx, next, 'Wallet'), walletAction);
 
+//---------------------------------------------------------------------+
+//                        Actions on Wallet page                       |
+//---------------------------------------------------------------------+
+
 /**
  * Catch the action when user clicks the '💳 Wallet' callback button
  */
@@ -356,12 +360,6 @@ bot.action(/Snipe Amount|Jito Fee|Priority Fee|Slippage/, inputAction);
  * Catch the action when user clicks the 'Start' callback button
  */
 bot.action('Return', (ctx, next) => checkAction(ctx, next, 'Return'), returnAction);
-
-//---------------------------------------------------------------------+
-//                        Actions on Wallet page                       |
-//---------------------------------------------------------------------+
-
-// bot.action('Create Wallet')
 
 //-------------------------------------------------------------------------------------------------------------+
 //                                    Set menu button to see all commands                                      |
